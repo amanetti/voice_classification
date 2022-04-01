@@ -1,0 +1,132 @@
+
+#import libraries
+import csv
+import numpy as np
+import pandas as pd
+from collections import Counter
+from matplotlib import pyplot as plt
+import seaborn as sns
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
+from tensorflow import keras
+from tensorflow.keras import layers
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MinMaxScaler
+from keras.optimizers import Adam
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+from keras.utils.np_utils import to_categorical
+from keras.models import Sequential
+from keras.layers import Dense, Dropout, Activation, Flatten
+from keras.layers import Convolution2D, MaxPooling2D
+from keras.utils import np_utils
+from sklearn.datasets import make_regression
+from sklearn import metrics
+from sklearn.model_selection import train_test_split, GridSearchCV 
+from tensorflow.keras.wrappers.scikit_learn import KerasRegressor
+from keras.models import load_model
+from keras_preprocessing.image import ImageDataGenerator
+from keras.layers import Dense, Activation, Flatten, Dropout, BatchNormalization
+from keras.models import Sequential, Model
+from keras.layers import Conv2D, MaxPooling2D
+from keras import regularizers, optimizers
+
+from keras.callbacks import EarlyStopping
+
+from keras import regularizers
+
+
+
+#import data into a dataframe
+df = pd.read_csv('voice.csv')
+print(df.describe()) #describe dataframe
+print(df)
+print(df.isna().sum()) #show missing data for every column
+print(df.duplicated().sum()) #check for duplicated items
+print(df.dtypes) #describe datatypes
+#data cleaning
+df.isna().sum() #show missing data
+
+df.value_counts()
+df.head()
+n_samples = len(df)
+n_male_samples = len(df[df['label'] == 'male']) # get total female samples
+n_female_samples = len(df[df['label'] == 'female'])
+print("Total samples:", n_samples)
+print("Total male samples:", n_male_samples)
+print("Total female samples:", n_female_samples)
+df.columns #show columns
+df.shape #show range
+sns.lmplot(x="meanfreq", y="maxfun", data=df, fit_reg=False, hue='label')
+
+#data labelling
+label2int = {
+    "male": 0,
+    "female": 1
+}
+# df.replace({"male":label2int,"female":label2int},inplace=True) #es wird den Label ersetz
+
+df["label"]=df["label"].replace(["male","female"],[0,1]) #label 0,1 to male and female
+#%%
+#divide train and test 80% train
+train_dataset = df.sample(frac=0.8, random_state=0)
+test_dataset = df.drop(train_dataset.index)
+
+train_dataset.describe()
+
+#extract label value
+X_train = train_dataset.copy()
+X_test = test_dataset.copy()
+
+y_train = X_train.pop('label')
+y_test = X_test.pop('label')
+
+X_train.head(3)
+
+df.drop(df.columns[[20]], axis=1, inplace=True) #drob axis
+data = df
+
+plt.figure(figsize=(9,9))
+
+logistique = lambda x: np.exp(x)/(1+np.exp(x))   #regression
+
+x_range = np.linspace(-10,10,50)       
+y_values = logistique(x_range)
+
+plt.plot(x_range, y_values, color="red")
+
+
+#normalize data
+skaler=MinMaxScaler()
+X_train=skaler.fit_transform(X_train)
+
+
+#model mit 3 Layers 
+model = tf.keras.Sequential([
+            tf.keras.layers.InputLayer(input_shape=(20,)), #columns
+            tf.keras.layers.Dense(10, activation='relu', kernel_initializer="he_normal"),#Gewichtsinitialisierung
+            tf.keras.layers.Dense(20, activation='relu', kernel_initializer="he_normal"), #Anzahl der Neuronen
+            tf.keras.layers.Dense(1, kernel_initializer="he_normal")
+            ])
+#compiling our module
+model.compile(optimizer='adam',
+              loss=tf.keras.losses.BinaryCrossentropy(),
+#This is the crossentropy metric class to be used when there are only two label classes (0 and 1).
+              metrics=['accuracy'])
+
+#fitting the model
+history = model.fit(X_train,y_train,epochs=250, verbose=True)
+history = pd.DataFrame(history.history)
+history.plot(xlabel="epochs",ylabel="losses")
+plt.show()
+
+
+
+
+
+
+
+
+
+
